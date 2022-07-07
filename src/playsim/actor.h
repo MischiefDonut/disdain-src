@@ -1027,7 +1027,12 @@ public:
 	DAngle			SpriteAngle;
 	DAngle			SpriteRotation;
 	DRotator		Angles;
+	DRotator		AnglesTarget;		// Ticrate adjustment target to yaw/pitch/roll to be applied uninterpolated
+	DRotator		AnglesDelta;		// Ticrate adjustment delta to yaw/pitch/roll to be applied uninterpolated
 	DRotator		ViewAngles;			// Angle offsets for cameras
+	DRotator		ViewAnglesTarget;	// Ticrate adjustments target to view yaw/pitch/roll to be applied uninterpolated
+	DRotator		ViewAnglesDelta;	// Ticrate adjustments delta to view yaw/pitch/roll to be applied uninterpolated
+
 	TObjPtr<DViewPosition*> ViewPos;			// Position offsets for cameras
 	FVector2		Scale;				// Scaling values; 1 is normal size
 	double			Alpha;				// Since P_CheckSight makes an alpha check this can't be a float. It has to be a double.
