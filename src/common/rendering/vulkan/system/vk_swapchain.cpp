@@ -41,12 +41,11 @@ VulkanSwapChain::~VulkanSwapChain()
 	ReleaseResources();
 }
 
-uint32_t VulkanSwapChain::AcquireImage(int width, int height, VulkanSemaphore *semaphore, VulkanFence *fence)
+uint32_t VulkanSwapChain::AcquireImage(int width, int height, bool vsync, VulkanSemaphore *semaphore, VulkanFence *fence)
 {
-	auto vsync = static_cast<VulkanFrameBuffer*>(screen)->cur_vsync;
 	if (lastSwapWidth != width || lastSwapHeight != height || lastVsync != vsync || lastHdr != vk_hdr || !swapChain)
 	{
-		Recreate();
+		Recreate(vsync);
 		lastSwapWidth = width;
 		lastSwapHeight = height;
 		lastVsync = vsync;
@@ -77,7 +76,7 @@ uint32_t VulkanSwapChain::AcquireImage(int width, int height, VulkanSemaphore *s
 		}
 		else if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
-			Recreate();
+			Recreate(vsync);
 		}
 		else if (result == VK_NOT_READY || result == VK_TIMEOUT)
 		{
@@ -133,13 +132,13 @@ void VulkanSwapChain::QueuePresent(uint32_t imageIndex, VulkanSemaphore *semapho
 	}
 }
 
-void VulkanSwapChain::Recreate()
+void VulkanSwapChain::Recreate(bool vsync)
 {
 	ReleaseViews();
 	swapChainImages.clear();
 
 	VkSwapchainKHR oldSwapChain = swapChain;
-	CreateSwapChain(oldSwapChain);
+	CreateSwapChain(vsync, oldSwapChain);
 	if (oldSwapChain)
 		vkDestroySwapchainKHR(device->device, oldSwapChain, nullptr);
 
@@ -150,10 +149,10 @@ void VulkanSwapChain::Recreate()
 	}
 }
 
-bool VulkanSwapChain::CreateSwapChain(VkSwapchainKHR oldSwapChain)
+bool VulkanSwapChain::CreateSwapChain(bool vsync, VkSwapchainKHR oldSwapChain)
 {
 	SelectFormat();
-	SelectPresentMode();
+	SelectPresentMode(vsync);
 
 	int width, height;
 	I_GetVulkanDrawableSize(&width, &height);
@@ -161,8 +160,8 @@ bool VulkanSwapChain::CreateSwapChain(VkSwapchainKHR oldSwapChain)
 	VkSurfaceCapabilitiesKHR surfaceCapabilities = GetSurfaceCapabilities();
 
 	actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
-	actualExtent.width = std::max(surfaceCapabilities.minImageExtent.width, std::min(surfaceCapabilities.maxImageExtent.width, actualExtent.width));
-	actualExtent.height = std::max(surfaceCapabilities.minImageExtent.height, std::min(surfaceCapabilities.maxImageExtent.height, actualExtent.height));
+	actualExtent.width = max(surfaceCapabilities.minImageExtent.width, min(surfaceCapabilities.maxImageExtent.width, actualExtent.width));
+	actualExtent.height = max(surfaceCapabilities.minImageExtent.height, min(surfaceCapabilities.maxImageExtent.height, actualExtent.height));
 	if (actualExtent.width == 0 || actualExtent.height == 0)
 	{
 		swapChain = VK_NULL_HANDLE;
@@ -176,9 +175,9 @@ bool VulkanSwapChain::CreateSwapChain(VkSwapchainKHR oldSwapChain)
 	// When vsync is on we only want two images. This creates a slight performance penalty in exchange for reduced input latency (less mouse lag).
 	// When vsync is off we want three images as it allows us to generate new images even during the vertical blanking period where one entry is being used by the presentation engine.
 	if (swapChainPresentMode == VK_PRESENT_MODE_MAILBOX_KHR || swapChainPresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR)
-		imageCount = std::min(imageCount, (uint32_t)3);
+		imageCount = min(imageCount, (uint32_t)3);
 	else
-		imageCount = std::min(imageCount, (uint32_t)2);
+		imageCount = min(imageCount, (uint32_t)2);
 
 	VkSwapchainCreateInfoKHR swapChainCreateInfo = {};
 	swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -301,7 +300,7 @@ void VulkanSwapChain::SelectFormat()
 	swapChainFormat = surfaceFormats.front();
 }
 
-void VulkanSwapChain::SelectPresentMode()
+void VulkanSwapChain::SelectPresentMode(bool vsync)
 {
 	std::vector<VkPresentModeKHR> presentModes = GetPresentModes();
 
@@ -309,7 +308,6 @@ void VulkanSwapChain::SelectPresentMode()
 		VulkanError("No surface present modes supported");
 
 	swapChainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-	auto vsync = static_cast<VulkanFrameBuffer*>(screen)->cur_vsync;
 	if (vsync)
 	{
 		bool supportsFifoRelaxed = std::find(presentModes.begin(), presentModes.end(), VK_PRESENT_MODE_FIFO_RELAXED_KHR) != presentModes.end();

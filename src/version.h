@@ -41,21 +41,21 @@ const char *GetVersionString();
 
 /** Lots of different version numbers **/
 
-#define VERSIONSTR "4.7.1"
+#define VERSIONSTR "4.8.2"
 
 // The version as seen in the Windows resource
-#define RC_FILEVERSION 4,7,1,0
-#define RC_PRODUCTVERSION 4,7,1,0
+#define RC_FILEVERSION 4,8,2,0
+#define RC_PRODUCTVERSION 4,8,2,0
 #define RC_PRODUCTVERSION2 VERSIONSTR
 // These are for content versioning.
 #define VER_MAJOR 4
-#define VER_MINOR 7
-#define VER_REVISION 1
+#define VER_MINOR 8
+#define VER_REVISION 2
 
 // This should always refer to the GZDoom version a derived port is based on and not reflect the derived port's version number!
 #define ENG_MAJOR 4
-#define ENG_MINOR 7
-#define ENG_REVISION 1
+#define ENG_MINOR 8
+#define ENG_REVISION 2
 
 // Version identifier for network games.
 // Bump it every time you do a release unless you're certain you
@@ -65,7 +65,7 @@ const char *GetVersionString();
 // Version stored in the ini's [LastRun] section.
 // Bump it if you made some configuration change that you want to
 // be able to migrate in FGameConfigFile::DoGlobalSetup().
-#define LASTRUNVERSION "222"
+#define LASTRUNVERSION "223"
 
 // Protocol version used in demos.
 // Bump it if you change existing DEM_ commands or add new ones.
@@ -109,6 +109,8 @@ const char *GetVersionString();
 #else
 #define GAME_DIR ".config/" GAMENAMELOWERCASE
 #endif
+
+#define DEFAULT_DISCORD_APP_ID "951303644597325885"
 
 const int SAVEPICWIDTH = 216;
 const int SAVEPICHEIGHT = 162;
