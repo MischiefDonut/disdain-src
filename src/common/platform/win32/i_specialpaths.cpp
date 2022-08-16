@@ -64,6 +64,7 @@ static const GUID FOLDERID_Pictures = { 0x33e28130, 0x4e1e, 0x4676, 0x83, 0x5a, 
 
 bool UseKnownFolders()
 {
+	return true;
 	// Cache this value so the semantics don't change during a single run
 	// of the program. (e.g. Somebody could add write access while the
 	// program is running.)
