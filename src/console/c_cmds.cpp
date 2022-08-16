@@ -646,6 +646,13 @@ UNSAFE_CCMD (load)
 
 UNSAFE_CCMD (save)
 {
+	// [Disdain]
+	if ((primaryLevel->flags9 & LEVEL9_NOUSERSAVE))
+	{
+		Printf("%s\n", GStrings("SAVEDEAD"));
+		return;
+	}
+
     if (argv.argc() < 2 || argv.argc() > 3)
 	{
         Printf ("usage: save <filename> [description]\n");

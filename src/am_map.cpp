@@ -1545,6 +1545,13 @@ void DAutomap::Ticker ()
 {
 	if (!automapactive)
 		return;
+	
+	// [Disdain]
+	if ((primaryLevel->flags9 & LEVEL9_NOAUTOMAP))
+	{
+		AM_ToggleMap();
+		return;
+	}
 
 	amclock++;
 }
@@ -3392,6 +3399,10 @@ void AM_ToggleMap()
 
 	// ... or if there is no automap.
 	if (!primaryLevel || !primaryLevel->automap)
+		return;
+
+	// [Disdain]
+	if (!automapactive && (primaryLevel->flags9 & LEVEL9_NOAUTOMAP))
 		return;
 
 	if (!automapactive)

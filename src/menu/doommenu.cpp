@@ -68,6 +68,9 @@
 #include "shiftstate.h"
 #include "hwrenderer/scene/hw_drawinfo.h"
 
+// [Disdain]
+#include "g_levellocals.h"
+
 EXTERN_CVAR(Int, cl_gfxlocalization)
 EXTERN_CVAR(Bool, m_quickexit)
 EXTERN_CVAR(Bool, saveloadconfirmation) // [mxd]
@@ -182,6 +185,14 @@ bool M_SetSpecialMenu(FName& menu, int param)
 			M_StartMessage (GStrings("SAVEDEAD"), 1);
 			return false;
 		}
+
+		// [Disdain]
+		if ((primaryLevel->flags9 & LEVEL9_NOUSERSAVE))
+		{
+			M_StartMessage(GStrings("SAVEDEAD"), 1);
+			return false;
+		}
+
 		break;
 
 	case NAME_Quitmenu:
@@ -397,6 +408,10 @@ CCMD (quicksave)
 		S_Sound (CHAN_VOICE, CHANF_UI, "menu/invalid", snd_menuvolume, ATTN_NONE);
 		return;
 	}
+
+	// [Disdain]
+	if ((primaryLevel->flags9 & LEVEL9_NOUSERSAVE))
+		return;
 
 	if (gamestate != GS_LEVEL)
 		return;
