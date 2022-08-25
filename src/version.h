@@ -117,5 +117,7 @@ const int SAVEPICHEIGHT = 162;
 const int VID_MIN_WIDTH = 320;
 const int VID_MIN_HEIGHT = 200;
 
+// [Disdain]
+#define DISDAINVERSION "1"
 
 #endif //__VERSION_H__
