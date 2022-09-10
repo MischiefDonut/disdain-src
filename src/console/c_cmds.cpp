@@ -248,7 +248,7 @@ CCMD (resurrect)
 
 EXTERN_CVAR (Bool, chasedemo)
 
-CCMD (chase)
+/*CCMD(chase) // [Disdain]
 {
 	if (demoplayback)
 	{
@@ -277,7 +277,7 @@ CCMD (chase)
 		Net_WriteByte (DEM_GENERICCHEAT);
 		Net_WriteByte (CHT_CHASECAM);
 	}
-}
+}*/
 
 CCMD (idclev)
 {
