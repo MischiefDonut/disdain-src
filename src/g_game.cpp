@@ -2490,8 +2490,9 @@ void G_DoSaveGame (bool okForQuicksave, bool forceQuicksave, FString filename, c
 		savegameManager.NotifyNewSave(filename, description, okForQuicksave, forceQuicksave);
 		BackupSaveName = filename;
 
-		if (longsavemessages) Printf("%s (%s)\n", GStrings("GGSAVED"), filename.GetChars());
-		else Printf("%s\n", GStrings("GGSAVED"));
+		// [Disdain]
+		//if (longsavemessages) Printf("%s (%s)\n", GStrings("GGSAVED"), filename.GetChars());
+		//else Printf("%s\n", GStrings("GGSAVED"));
 	}
 	else
 	{
