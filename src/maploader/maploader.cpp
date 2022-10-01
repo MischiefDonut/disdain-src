@@ -3341,10 +3341,10 @@ void MapLoader::LoadLightmap(MapData *map)
 	Level->LPMinY = 0;
 	Level->LPWidth = 0;
 	Level->LPHeight = 0;
-	/*
-	if (!Args->CheckParm("-enablelightmaps"))
-		return;		// this feature is still too early WIP to allow general access
-	*/
+
+	//if (!Args->CheckParm("-enablelightmaps"))
+	//	return;		// this feature is still too early WIP to allow general access
+
 	if (!map->Size(ML_LIGHTMAP))
 		return;
 
