@@ -4037,7 +4037,8 @@ void AActor::Tick ()
 					}
 					if (onmo->Top() - Z() <= MaxStepHeight)
 					{
-						if (player && player->mo == this)
+						// [Disdain]
+						/*if (player && player->mo == this)
 						{
 							player->viewheight -= onmo->Top() - Z();
 							double deltaview = player->GetDeltaViewHeight();
@@ -4045,7 +4046,7 @@ void AActor::Tick ()
 							{
 								player->deltaviewheight = deltaview;
 							}
-						} 
+						}*/
 						SetZ(onmo->Top());
 					}
 					// Check for MF6_BUMPSPECIAL
