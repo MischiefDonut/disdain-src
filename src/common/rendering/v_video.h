@@ -145,6 +145,8 @@ public:
 	FLightBuffer *mLights = nullptr;			// Dynamic lights
 	IShadowMap mShadowMap;
 
+	int mGameScreenWidth = 0;
+	int mGameScreenHeight = 0;
 	IntRect mScreenViewport;
 	IntRect mSceneViewport;
 	IntRect mOutputLetterbox;
