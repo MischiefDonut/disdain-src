@@ -1,5 +1,4 @@
 cmake_minimum_required( VERSION 3.1.0 )
-cmake_minimum_required( VERSION 3.1.0 )
 
 include(precompiled_headers)
 
@@ -38,9 +37,6 @@ endif()
 # Right now only 64 bit is supported.
 if( ${TARGET_ARCHITECTURE} MATCHES "x86_64" )
 	set( X64 64 )
-endif()
-
-if( X64 OR ${TARGET_ARCHITECTURE} MATCHES "i386" )
 	add_definitions( -DARCH_IA32 )
 endif()
 
@@ -49,23 +45,13 @@ if( NOT PROJECT_LIBRARIES )
 endif()
 
 if( WIN32 )
-	if( X64 )
-		set( WIN_TYPE Win64 )
-		set( XBITS x64 )
-	else()
-		set( WIN_TYPE Win32 )
-		set( XBITS x86 )
-	endif()
 
 	add_definitions( -D_WIN32 )
-
-
-	set( DX_dinput8_LIBRARY dinput8 )
 
 	set( PROJECT_LIBRARIES
 		wsock32
 		winmm
-		"${DX_dinput8_LIBRARY}"
+		dinput8
 		ole32
 		user32
 		gdi32
@@ -77,15 +63,10 @@ if( WIN32 )
 		dbghelp
 		legacy_stdio_definitions )
 
-	if( NOT DEM_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
-		set( PROJECT_LIBRARIES ${PROJECT_LIBRARIES} DelayImp )
-	endif()
-
 	if( DEM_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 		if( DX_dxguid_LIBRARY )
 			list( APPEND PROJECT_LIBRARIES "${DX_dxguid_LIBRARY}" )
 		endif()
-		list( APPEND PROJECT_LIBRARIES d3d9 )
 	endif()
 else()
 	if( APPLE )
@@ -147,11 +128,6 @@ else()
 		set( PROJECT_LIBRARIES ${PROJECT_LIBRARIES} "${SDL2_LIBRARY}" )
 	endif()
 
-	find_path( FPU_CONTROL_DIR fpu_control.h )
-	if( FPU_CONTROL_DIR )
-		include_directories( ${FPU_CONTROL_DIR} )
-		add_definitions( -DHAVE_FPU_CONTROL )
-	endif()
 endif()
 
 if( NOT NO_OPENAL )
@@ -180,33 +156,8 @@ endif()
 
 # Decide on SSE setup
 
-# SSE only matters on 32-bit targets. We check compiler flags to know if we can do it.
-if( CMAKE_SIZEOF_VOID_P MATCHES "4" AND NOT CMAKE_OSX_ARCHITECTURES MATCHES ppc )
-		CHECK_CXX_COMPILER_FLAG( "-msse2 -mfpmath=sse" CAN_DO_MFPMATH )
-		CHECK_CXX_COMPILER_FLAG( -arch:SSE2 CAN_DO_ARCHSSE2 )
-		if( CAN_DO_MFPMATH )
-			set( SSE1_ENABLE "-msse -mfpmath=sse" )
-			set( SSE2_ENABLE "-msse2 -mfpmath=sse" )
-		elseif( CAN_DO_ARCHSSE2 )
-			set( SSE1_ENABLE -arch:SSE )
-			set( SSE2_ENABLE -arch:SSE2 )
-		endif()
-endif()
-
 if( X64 )
 	set( HAVE_MMX 1 )
-else( X64 )
-	set( SAFE_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )
-
-	if( DEM_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
-		set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mmmx")
-	endif( DEM_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
-
-	CHECK_CXX_SOURCE_COMPILES("#include <mmintrin.h>
-		int main(void) { __m64 v = _m_from_int(0); }"
-		HAVE_MMX)
-
-	set( CMAKE_CXX_FLAGS ${SAFE_CMAKE_CXX_FLAGS} )
 endif( X64 )
 
 CHECK_CXX_SOURCE_COMPILES("#include <ppl.h>
@@ -234,7 +185,6 @@ if( DEM_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 		set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -pg" )
 	endif()
 
-	#set( REL_CXX_FLAGS "-fno-rtti" )
 	if( NOT PROFILE AND NOT APPLE )
 		# On OS X frame pointers are required for exception handling, at least with Clang
 		set( REL_CXX_FLAGS "${REL_CXX_FLAGS} -fomit-frame-pointer" )
@@ -325,16 +275,6 @@ if( NOT HAVE_THREAD_LOCAL )
 endif()
 
 # Check for functions that may or may not exist.
-
-CHECK_FUNCTION_EXISTS( filelength FILELENGTH_EXISTS )
-if( FILELENGTH_EXISTS )
-	add_definitions( -DHAVE_FILELENGTH=1 )
-endif()
-
-CHECK_FUNCTION_EXISTS( strupr STRUPR_EXISTS )
-if( NOT STRUPR_EXISTS )
-	add_definitions( -DNEED_STRUPR=1 )
-endif()
 
 require_stricmp()
 require_strnicmp()
@@ -857,7 +797,6 @@ set (PCH_SOURCES
 	g_hub.cpp
 	g_level.cpp
 	gameconfigfile.cpp
-	gitinfo.cpp
 	hu_scores.cpp
 	m_cheat.cpp
 	m_misc.cpp
@@ -1085,6 +1024,7 @@ set (PCH_SOURCES
 	common/models/models_voxel.cpp
 	common/models/models_ue1.cpp
 	common/models/models_obj.cpp
+	common/models/models_iqm.cpp
 	common/models/model.cpp
 	common/models/voxels.cpp
 	common/console/c_commandline.cpp
@@ -1104,6 +1044,7 @@ set (PCH_SOURCES
 	common/cutscenes/screenjob.cpp
 	common/utility/engineerrors.cpp
 	common/utility/i_module.cpp
+	common/utility/gitinfo.cpp
 	common/utility/m_alloc.cpp
 	common/utility/utf8.cpp
 	common/utility/palette.cpp
@@ -1179,6 +1120,7 @@ set (PCH_SOURCES
 	common/rendering/hwrenderer/data/hw_cvars.cpp
 	common/rendering/hwrenderer/data/hw_vrmodes.cpp
 	common/rendering/hwrenderer/data/hw_lightbuffer.cpp
+	common/rendering/hwrenderer/data/hw_bonebuffer.cpp
 	common/rendering/hwrenderer/data/hw_aabbtree.cpp
 	common/rendering/hwrenderer/data/hw_shadowmap.cpp
 	common/rendering/hwrenderer/data/hw_shaderpatcher.cpp
@@ -1420,10 +1362,6 @@ install(DIRECTORY "${PROJECT_BINARY_DIR}/soundfonts" "${PROJECT_BINARY_DIR}/fm_b
 		DESTINATION ${INSTALL_SOUNDFONT_PATH}
 		COMPONENT "Soundfont resources")
 
-if( CMAKE_COMPILER_IS_GNUCXX )
-	# GCC misoptimizes this file
-	set_source_files_properties( oplsynth/fmopl.cpp PROPERTIES COMPILE_FLAGS "-fno-tree-dominator-opts -fno-tree-fre" )
-endif()
 if( DEM_CMAKE_COMPILER_IS_GNUCXX_COMPATIBLE )
 	# Need to enable intrinsics for these files.
 	set_property( SOURCE
