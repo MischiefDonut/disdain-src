@@ -3450,7 +3450,7 @@ static inline void P_ProcessAngleChange(player_t *player, AActor *actor, DAngle 
 			}
 			else
 			{
-				if (target == AngleToFloat(1)) target = angle;
+				if (target == DAngle::fromBam(1)) target = angle;
 				target = deltaangle(angle, target) + angle + deltaangle(angle, change);
 				delta = deltaangle(angle, target);
 			}

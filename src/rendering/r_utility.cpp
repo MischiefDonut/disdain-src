@@ -768,16 +768,16 @@ static void R_DoActorTickerAngleChanges(player_t *player, AActor *actor, double 
 		auto processAngle = [&](auto &current, auto &target, auto &delta)
 		{
 			// Adjust angle if required.
-			if (delta != 0)
+			if (delta != nullAngle)
 			{
 				current = (current + (delta * scale)).Normalized180();
 
 				// Check we haven't exceeded our bounds.
-				if ((delta > 0 && current > target) || (delta < 0 && current < target))
+				if ((delta > nullAngle && current > target) || (delta < nullAngle && current < target))
 				{
 					current = target;
-					target = AngleToFloat(1);
-					delta = 0.;
+					target = DAngle::fromBam(1);
+					delta = nullAngle;
 				}
 			}
 		};
