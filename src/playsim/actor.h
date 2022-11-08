@@ -723,7 +723,7 @@ public:
 const double MinVel = EQUAL_EPSILON;
 
 // Map Object definition.
-class AActor final : public DThinker
+class AActor /*final*/ : public DThinker
 {
 	DECLARE_CLASS_WITH_META (AActor, DThinker, PClassActor)
 	HAS_OBJECT_POINTERS
