@@ -382,7 +382,7 @@ bool HWSprite::CalculateVertices(HWDrawInfo *di, FVector3 *v, DVector3 *vp)
 	}
 	
 	// [BB] Billboard stuff
-	const bool drawWithXYBillboard = ((particle && gl_billboard_particles && !(particle->flags & PT_NOXYBILLBOARD)) || (!(actor && actor->renderflags & RF_FORCEYBILLBOARD)
+	const bool drawWithXYBillboard = ((particle && gl_billboard_particles) || (!(actor && actor->renderflags & RF_FORCEYBILLBOARD)
 		//&& di->mViewActor != nullptr
 		&& (gl_billboard_mode == 1 || (actor && actor->renderflags & RF_FORCEXYBILLBOARD))));
 
@@ -390,7 +390,7 @@ bool HWSprite::CalculateVertices(HWDrawInfo *di, FVector3 *v, DVector3 *vp)
 	// [Nash] has +ROLLSPRITE
 	const bool drawRollSpriteActor = (actor != nullptr && actor->renderflags & RF_ROLLSPRITE);
 
-	const bool drawRollParticle = (particle != nullptr && particle->flags & PT_DOROLL);
+	const bool drawRollParticle = (particle != nullptr && particle->doRoll);
 
 
 	// [fgsfds] check sprite type mask
@@ -402,7 +402,7 @@ bool HWSprite::CalculateVertices(HWDrawInfo *di, FVector3 *v, DVector3 *vp)
 	const bool useOffsets = (actor != nullptr) && !(actor->renderflags & RF_ROLLCENTER);
 
 	// [Nash] check for special sprite drawing modes
-	if (drawWithXYBillboard || drawBillboardFacingCamera || drawRollSpriteActor || drawRollParticle || isFlatSprite)
+	if (drawWithXYBillboard || drawBillboardFacingCamera || drawRollSpriteActor || isFlatSprite)
 	{
 		// Compute center of sprite
 		float xcenter = (x1 + x2)*0.5;
@@ -1341,7 +1341,7 @@ void HWSprite::ProcessParticle (HWDrawInfo *di, particle_t *particle, sector_t *
 	y = float(particle->Pos.Y) + yvf;
 	z = float(particle->Pos.Z) + zvf;
 
-	if(particle->flags & PT_DOROLL)
+	if(particle->doRoll)
 	{
 		float rvf = (particle->RollVel) * timefrac;
 		Angles.Roll = TAngle<double>::fromDeg(particle->Roll + rvf);
