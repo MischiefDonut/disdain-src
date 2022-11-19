@@ -3140,6 +3140,12 @@ DEFINE_ACTION_FUNCTION(AActor, Howl)
 
 bool AActor::Slam (AActor *thing)
 {
+	if ((flags8 & MF8_ONLYSLAMSOLID)
+		&& !(thing->flags & MF_SOLID) && !(thing->flags & MF_SHOOTABLE))
+	{
+		return true;
+	}
+
 	flags &= ~MF_SKULLFLY;
 	Vel.Zero();
 	if (health > 0)
@@ -3152,8 +3158,13 @@ bool AActor::Slam (AActor *thing)
 			// The charging monster may have died by the target's actions here.
 			if (health > 0)
 			{
-				if (SeeState != NULL && !(flags8 & MF8_RETARGETAFTERSLAM)) SetState (SeeState);
-				else SetIdle();
+				FState *slam = FindState(NAME_Slam);
+				if (slam != NULL)
+					SetState(slam);
+				else if (SeeState != NULL && !(flags8 & MF8_RETARGETAFTERSLAM))
+					SetState (SeeState);
+				else
+					SetIdle();
 			}
 		}
 		else
@@ -3299,6 +3310,22 @@ DEFINE_ACTION_FUNCTION(AActor, PlayActiveSound)
 {
 	PARAM_SELF_PROLOGUE(AActor);
 	self->PlayActiveSound();
+	return 0;
+}
+
+void AActor::PlayPushSound()
+{
+	FSoundID push = SoundVar(NAME_PushSound);
+	if (!S_IsActorPlayingSomething(this, CHAN_BODY, push))
+	{
+		S_Sound(this, CHAN_BODY, 0, push, 1, ATTN_NORM);
+	}
+}
+
+DEFINE_ACTION_FUNCTION(AActor, PlayPushSound)
+{
+	PARAM_SELF_PROLOGUE(AActor);
+	self->PlayPushSound();
 	return 0;
 }
 

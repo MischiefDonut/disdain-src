@@ -655,6 +655,7 @@ public:
 	DSeqNode *SequenceListHead;
 
 	// [RH] particle globals
+	uint32_t			OldestParticle; // [MC] Oldest particle for replacing with PS_REPLACE
 	uint32_t			ActiveParticles;
 	uint32_t			InactiveParticles;
 	TArray<particle_t>	Particles;
