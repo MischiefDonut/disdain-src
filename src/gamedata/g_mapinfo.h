@@ -396,7 +396,7 @@ struct level_info_t
 
 	TArray<FSpecialAction> specialactions;
 
-	TArray<int> PrecacheSounds;
+	TArray<FSoundID> PrecacheSounds;
 	TArray<FString> PrecacheTextures;
 	TArray<FName> PrecacheClasses;
 	
