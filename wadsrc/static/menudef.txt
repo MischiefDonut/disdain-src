@@ -2271,7 +2271,10 @@ OptionMenu VideoModeMenu protected
 
 	Option "$VIDMNU_PREFERBACKEND",		"vid_preferbackend", "PreferBackend"
 	StaticText " "
-	Option "$VIDMNU_RENDERMODE",		"vid_rendermode", "RenderMode"
+	IfOption(SWRender)
+	{
+		Option "$VIDMNU_RENDERMODE",		"vid_rendermode", "RenderMode"
+	}
 	Option "$VIDMNU_FULLSCREEN",		"vid_fullscreen", "YesNo"
 
 	IfOption(Mac)
@@ -2819,7 +2822,7 @@ OptionValue "os_isanyof_values"
 OptionMenu "vkoptions"
 {
 	Title "$VK_TITLE"
-	StaticText "$VK_WARNING"
+	//StaticText "$VK_WARNING"
 	StaticText "$VK_RESTART"
 	StaticText ""
 	TextField "$VKMNU_DEVICE",			vk_device

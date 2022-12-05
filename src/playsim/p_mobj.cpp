@@ -159,7 +159,6 @@ CVAR (Int, cl_bloodtype, 0, CVAR_ARCHIVE);
 // CODE --------------------------------------------------------------------
 
 IMPLEMENT_CLASS(DActorModelData, false, false);
-IMPLEMENT_CLASS(DBoneComponents, false, false);
 IMPLEMENT_CLASS(AActor, false, true)
 
 IMPLEMENT_POINTERS_START(AActor)
@@ -1437,7 +1436,7 @@ void P_ExplodeMissile (AActor *mo, line_t *line, AActor *target, bool onsky, FNa
 	}
 
 	// play the sound before changing the state, so that AActor::OnDestroy can call S_RelinkSounds on it and the death state can override it.
-	if (mo->DeathSound)
+	if (mo->DeathSound.isvalid())
 	{
 		S_Sound (mo, CHAN_VOICE, 0, mo->DeathSound, 1,
 			(mo->flags3 & MF3_FULLVOLDEATH) ? ATTN_NONE : ATTN_NORM);
@@ -1505,7 +1504,7 @@ void AActor::PlayBounceSound(bool onfloor)
 		{
 			S_Sound (this, CHAN_VOICE, 0, SeeSound, 1, ATTN_IDLE);
 		}
-		else if (onfloor || WallBounceSound <= 0)
+		else if (onfloor || !WallBounceSound.isvalid())
 		{
 			S_Sound (this, CHAN_VOICE, 0, BounceSound, 1, ATTN_IDLE);
 		}
@@ -3141,6 +3140,12 @@ DEFINE_ACTION_FUNCTION(AActor, Howl)
 
 bool AActor::Slam (AActor *thing)
 {
+	if ((flags8 & MF8_ONLYSLAMSOLID)
+		&& !(thing->flags & MF_SOLID) && !(thing->flags & MF_SHOOTABLE))
+	{
+		return true;
+	}
+
 	flags &= ~MF_SKULLFLY;
 	Vel.Zero();
 	if (health > 0)
@@ -3153,8 +3158,13 @@ bool AActor::Slam (AActor *thing)
 			// The charging monster may have died by the target's actions here.
 			if (health > 0)
 			{
-				if (SeeState != NULL && !(flags8 & MF8_RETARGETAFTERSLAM)) SetState (SeeState);
-				else SetIdle();
+				FState *slam = FindState(NAME_Slam);
+				if (slam != NULL)
+					SetState(slam);
+				else if (SeeState != NULL && !(flags8 & MF8_RETARGETAFTERSLAM))
+					SetState (SeeState);
+				else
+					SetIdle();
 			}
 		}
 		else
@@ -3289,7 +3299,7 @@ void AActor::AlterWeaponSprite(visstyle_t *vis)
 
 void AActor::PlayActiveSound ()
 {
-	if (ActiveSound && !S_IsActorPlayingSomething (this, CHAN_VOICE, -1))
+	if (ActiveSound.isvalid() && !S_IsActorPlayingSomething(this, CHAN_VOICE))
 	{
 		S_Sound (this, CHAN_VOICE, 0, ActiveSound, 1,
 			(flags3 & MF3_FULLVOLACTIVE) ? ATTN_NONE : ATTN_IDLE);
@@ -3300,6 +3310,22 @@ DEFINE_ACTION_FUNCTION(AActor, PlayActiveSound)
 {
 	PARAM_SELF_PROLOGUE(AActor);
 	self->PlayActiveSound();
+	return 0;
+}
+
+void AActor::PlayPushSound()
+{
+	FSoundID push = SoundVar(NAME_PushSound);
+	if (!S_IsActorPlayingSomething(this, CHAN_BODY, push))
+	{
+		S_Sound(this, CHAN_BODY, 0, push, 1, ATTN_NORM);
+	}
+}
+
+DEFINE_ACTION_FUNCTION(AActor, PlayPushSound)
+{
+	PARAM_SELF_PROLOGUE(AActor);
+	self->PlayPushSound();
 	return 0;
 }
 
@@ -3401,10 +3427,29 @@ void AActor::SetPitch(DAngle p, int fflags)
 
 	if (p != Angles.Pitch)
 	{
-		Angles.Pitch = p;
-		if (player != nullptr && (fflags & SPF_INTERPOLATE))
+		if (player != nullptr)
 		{
-			player->cheats |= CF_INTERPVIEW;
+			const bool mustLerp = !P_NoInterpolation(player, this);
+
+			if ((fflags & SPF_INTERPOLATE) || ((fflags & SPF_SCALEDNOLERP) && mustLerp))
+			{
+				Angles.Pitch = p;
+				player->cheats |= CF_INTERPVIEW;
+			}
+			else if ((fflags & SPF_SCALEDNOLERP) && !mustLerp)
+			{
+				player->angleTargets.Pitch = deltaangle(Angles.Pitch, p);
+				player->angleAppliedAmounts.Pitch = nullAngle;
+				player->cheats |= CF_SCALEDNOLERP;
+			}
+			else
+			{
+				Angles.Pitch = p;
+			}
+		}
+		else
+		{
+			Angles.Pitch = p;
 		}
 	}
 	
@@ -3414,10 +3459,29 @@ void AActor::SetAngle(DAngle ang, int fflags)
 {
 	if (ang != Angles.Yaw)
 	{
-		Angles.Yaw = ang;
-		if (player != nullptr && (fflags & SPF_INTERPOLATE))
+		if (player != nullptr)
 		{
-			player->cheats |= CF_INTERPVIEW;
+			const bool mustLerp = !P_NoInterpolation(player, this);
+
+			if ((fflags & SPF_INTERPOLATE) || ((fflags & SPF_SCALEDNOLERP) && mustLerp))
+			{
+				Angles.Yaw = ang;
+				player->cheats |= CF_INTERPVIEW;
+			}
+			else if ((fflags & SPF_SCALEDNOLERP) && !mustLerp)
+			{
+				player->angleTargets.Yaw = deltaangle(Angles.Yaw, ang);
+				player->angleAppliedAmounts.Yaw = nullAngle;
+				player->cheats |= CF_SCALEDNOLERP;
+			}
+			else
+			{
+				Angles.Yaw = ang;
+			}
+		}
+		else
+		{
+			Angles.Yaw = ang;
 		}
 	}
 	
@@ -3427,10 +3491,29 @@ void AActor::SetRoll(DAngle r, int fflags)
 {
 	if (r != Angles.Roll)
 	{
-		Angles.Roll = r;
-		if (player != nullptr && (fflags & SPF_INTERPOLATE))
+		if (player != nullptr)
 		{
-			player->cheats |= CF_INTERPVIEW;
+			const bool mustLerp = !P_NoInterpolation(player, this);
+
+			if ((fflags & SPF_INTERPOLATE) || ((fflags & SPF_SCALEDNOLERP) && mustLerp))
+			{
+				Angles.Roll = r;
+				player->cheats |= CF_INTERPVIEW;
+			}
+			else if ((fflags & SPF_SCALEDNOLERP) && !mustLerp)
+			{
+				player->angleTargets.Roll = deltaangle(Angles.Roll, r);
+				player->angleAppliedAmounts.Roll = nullAngle;
+				player->cheats |= CF_SCALEDNOLERP;
+			}
+			else
+			{
+				Angles.Roll = r;
+			}
+		}
+		else
+		{
+			Angles.Roll = r;
 		}
 	}
 }
@@ -3447,7 +3530,7 @@ void AActor::SetViewPitch(DAngle p, int fflags)
 		ViewAngles.Pitch = p;
 		if (player != nullptr && (fflags & SPF_INTERPOLATE))
 		{
-			player->cheats |= CF_INTERPVIEW;
+			player->cheats |= CF_INTERPVIEWANGLES;
 		}
 	}
 
@@ -3460,7 +3543,7 @@ void AActor::SetViewAngle(DAngle ang, int fflags)
 		ViewAngles.Yaw = ang;
 		if (player != nullptr && (fflags & SPF_INTERPOLATE))
 		{
-			player->cheats |= CF_INTERPVIEW;
+			player->cheats |= CF_INTERPVIEWANGLES;
 		}
 	}
 
@@ -3473,7 +3556,7 @@ void AActor::SetViewRoll(DAngle r, int fflags)
 		ViewAngles.Roll = r;
 		if (player != nullptr && (fflags & SPF_INTERPOLATE))
 		{
-			player->cheats |= CF_INTERPVIEW;
+			player->cheats |= CF_INTERPVIEWANGLES;
 		}
 	}
 }
@@ -5838,11 +5921,11 @@ AActor *P_SpawnPuff (AActor *source, PClassActor *pufftype, const DVector3 &pos1
 			if (cl_pufftype == 1) puff->renderflags |= RF_INVISIBLE;
 		}
 
-		if ((flags & PF_HITTHING) && puff->SeeSound)
+		if ((flags & PF_HITTHING) && puff->SeeSound.isvalid())
 		{ // Hit thing sound
 			S_Sound (puff, CHAN_BODY, 0, puff->SeeSound, 1, ATTN_NORM);
 		}
-		else if (puff->AttackSound)
+		else if (puff->AttackSound.isvalid())
 		{
 			S_Sound (puff, CHAN_BODY, 0, puff->AttackSound, 1, ATTN_NORM);
 		}
@@ -6472,7 +6555,7 @@ DEFINE_ACTION_FUNCTION(AActor, CheckMissileSpawn)
 
 void P_PlaySpawnSound(AActor *missile, AActor *spawner)
 {
-	if (missile->SeeSound != 0)
+	if (missile->SeeSound != NO_SOUND)
 	{
 		if (!(missile->flags & MF_SPAWNSOUNDSOURCE))
 		{
