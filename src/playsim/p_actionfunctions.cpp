@@ -1620,6 +1620,8 @@ enum SPFflag
 	SPF_RELANG =			1 << 4,
 	SPF_NOTIMEFREEZE =		1 << 5,
 	SPF_ROLL =				1 << 6,
+	SPF_REPLACE =           1 << 7,
+	SPF_NO_XY_BILLBOARD =	1 << 8,
 };
 
 DEFINE_ACTION_FUNCTION(AActor, A_SpawnParticle)
@@ -5123,6 +5125,11 @@ DEFINE_ACTION_FUNCTION(AActor, A_ChangeModel)
 
 	if (self == nullptr)
 		ACTION_RETURN_BOOL(false);
+	else if (modeldef != NAME_None && PClass::FindClass(modeldef.GetChars()) == nullptr)
+	{
+		Printf("Attempt to pass invalid modeldef name %s in %s.", modeldef.GetChars(), self->GetCharacterName());
+		ACTION_RETURN_BOOL(false);
+	}
 	else if (modelindex < 0)
 	{
 		Printf("Attempt to pass invalid model index %d in %s, index must be non-negative.", modelindex, self->GetCharacterName());
