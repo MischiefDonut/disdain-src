@@ -8770,7 +8770,7 @@ scriptwait:
 					if (type & HUDMSG_LOG)
 					{
 						int consolecolor = color >= CR_BRICK && color < NUM_TEXT_COLORS && color != CR_UNTRANSLATED ? color + 'A' : '-';
-						Printf(PRINT_NONOTIFY, "\n" TEXTCOLOR_ESCAPESTR "%c%s\n%s\n%s\n", consolecolor, console_bar, work.GetChars(), console_bar);
+						Printf(PRINT_HIGH | PRINT_NONOTIFY, "\n" TEXTCOLOR_ESCAPESTR "%c%s\n%s\n%s\n", consolecolor, console_bar, work.GetChars(), console_bar);
 					}
 				}
 			}
@@ -9959,7 +9959,7 @@ scriptwait:
 				case PLAYERINFO_PLAYERCLASS:	STACK(2) = userinfo->GetPlayerClassNum(); break;
 				case PLAYERINFO_DESIREDFOV:		STACK(2) = (int)pl->DesiredFOV; break;
 				case PLAYERINFO_FOV:			STACK(2) = (int)pl->FOV; break;
-				case PLAYERINFO_FVIEWBOB:		STACK(2) = DoubleToACS(userinfo->GetFViewBob()); break;
+				case PLAYERINFO_FVIEWBOB:		STACK(2) = (bool)userinfo->GetFViewBob(); break;
 				default:						STACK(2) = 0; break;
 				}
 			}

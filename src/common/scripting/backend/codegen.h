@@ -294,6 +294,7 @@ enum EFxType
 	EFX_Super,
 	EFX_StackVariable,
 	EFX_MultiAssign,
+	EFX_MultiAssignDecl,
 	EFX_StaticArray,
 	EFX_StaticArrayVariable,
 	EFX_CVar,
@@ -560,14 +561,12 @@ public:
 class FxVectorValue : public FxExpression
 {
 	constexpr static int maxVectorDimensions = 4;
-
-	FxExpression *xyzw[maxVectorDimensions];
 	bool isConst;	// gets set to true if all element are const (used by function defaults parser)
 
 public:
+	FxExpression *xyzw[maxVectorDimensions];
 
 	friend class ZCCCompiler;
-	friend class ZCCDoomCompiler;
 
 	FxVectorValue(FxExpression *x, FxExpression *y, FxExpression *z, FxExpression* w, const FScriptPosition &sc);
 	~FxVectorValue();
@@ -904,6 +903,17 @@ public:
 	~FxMultiAssign();
 	FxExpression *Resolve(FCompileContext&);
 	ExpEmit Emit(VMFunctionBuilder *build);
+};
+
+class FxMultiAssignDecl : public FxExpression
+{
+	FArgumentList Base;
+	FxExpression *Right;
+public:
+	FxMultiAssignDecl(FArgumentList &base, FxExpression *right, const FScriptPosition &pos);
+	~FxMultiAssignDecl();
+	FxExpression *Resolve(FCompileContext&);
+	//ExpEmit Emit(VMFunctionBuilder *build); This node is transformed into Declarations + FxMultiAssign , so it won't ever be emitted itself
 };
 
 //==========================================================================
