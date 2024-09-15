@@ -468,8 +468,8 @@ class EnterKey : Menu
 			menuactive = Menu.On;
 			SetMenuMessage(0);
 			Close();
-			mParentMenu.MenuEvent((ev.KeyScan == InputEvent.KEY_ESCAPE)? Menu.MKEY_Abort : Menu.MKEY_Input, 0);
-			return true;
+            mParentMenu.MenuEvent((ev.KeyScan == InputEvent.KEY_ESCAPE) || (ev.KeyScan == InputEvent.KEY_JOY2) ? Menu.MKEY_Abort : Menu.MKEY_Input, 0);
+            return true;
 		}
 		return false;
 	}
