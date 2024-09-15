@@ -317,7 +317,8 @@ CCMD (slot)
 		}
 
 		// [Nash] Option to display the name of the weapon being switched to.
-		if ((paused || pauseext) || players[consoleplayer].playerstate != PST_LIVE) return;
+		if ((paused || pauseext) || players[consoleplayer].playerstate != PST_LIVE)
+			return;
 		if (SendItemUse != players[consoleplayer].ReadyWeapon && (displaynametags & 2) && StatusBar && SmallFont && SendItemUse)
 		{
 			StatusBar->AttachMessage(Create<DHUDMessageFadeOut>(nullptr, SendItemUse->GetTag(),
@@ -333,6 +334,8 @@ CCMD (centerview)
 
 CCMD(crouch)
 {
+	if ((players[consoleplayer].cheats & CF_TOTALLYFROZEN))
+		return;
 	Net_WriteByte(DEM_CROUCH);
 }
 
