@@ -620,7 +620,11 @@ void HWDrawInfo::DrawCorona(FRenderState& state, ACorona* corona, double dist)
 
 	state.SetLightIndex(-1);
 	state.SetRenderStyle(corona->RenderStyle);
+	state.SetTextureMode(TM_NORMAL); // This is needed because the next line doesn't always set the mode...
 	state.SetTextureMode(corona->RenderStyle);
+
+	// no need for alpha test, coronas are meant to be translucent
+	state.AlphaFunc(Alpha_GEqual, 0.f);
 
 	state.SetMaterial(tex, UF_Sprite, CTF_Expand, CLAMP_XY_NOMIP, 0, 0);
 
@@ -696,6 +700,7 @@ void HWDrawInfo::DrawCoronas(FRenderState& state)
 			DrawCorona(state, corona, dist);
 	}
 
+	state.AlphaFunc(Alpha_Greater, 0.f);
 	state.SetTextureMode(TM_NORMAL);
 	screen->mViewpoints->Bind(state, vpIndex);
 	state.EnableDepthTest(true);
