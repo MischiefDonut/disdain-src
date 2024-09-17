@@ -1622,6 +1622,7 @@ enum SPFflag
 	SPF_ROLL =				1 << 6,
 	SPF_REPLACE =           1 << 7,
 	SPF_NO_XY_BILLBOARD =	1 << 8,
+	SPF_NOMIPMAP =			1 << 14,
 };
 
 DEFINE_ACTION_FUNCTION(AActor, A_SpawnParticle)

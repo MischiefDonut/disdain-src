@@ -487,6 +487,8 @@ enum ActorRenderFlag2
 {
 	RF2_INVISIBLEINMIRRORS		= 0x0001,	// [Nash] won't render in mirrors
 	RF2_ONLYVISIBLEINMIRRORS	= 0x0002,	// [Nash] only renders in mirrors
+
+	RF2_NOMIPMAP				= 0x0080,	// [Nash] forces no mipmapping on
 };
 
 // This translucency value produces the closest match to Heretic's TINTTAB.

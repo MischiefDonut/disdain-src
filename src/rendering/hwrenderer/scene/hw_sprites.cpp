@@ -221,8 +221,10 @@ void HWSprite::DrawSprite(HWDrawInfo *di, FRenderState &state, bool translucent)
 		state.SetFog(0, 0);
 	}
 
+	int clampmode = nomipmap ? CLAMP_XY_NOMIP : CLAMP_XY;
+
 	uint32_t spritetype = actor? uint32_t(actor->renderflags & RF_SPRITETYPEMASK) : 0;
-	if (texture) state.SetMaterial(texture, UF_Sprite, (spritetype == RF_FACESPRITE) ? CTF_Expand : 0, CLAMP_XY, translation, OverrideShader);
+	if (texture) state.SetMaterial(texture, UF_Sprite, (spritetype == RF_FACESPRITE) ? CTF_Expand : 0, clampmode, translation, OverrideShader);
 	else if (!modelframe) state.EnableTexture(false);
 
 	//SetColor(lightlevel, rel, Colormap, trans);
@@ -721,6 +723,8 @@ void HWSprite::Process(HWDrawInfo *di, AActor* thing, sector_t * sector, area_t 
 		if (!(thing->flags & MF_STEALTH) || !di->isStealthVision() || thing == camera)
 			return;
 	}
+
+	nomipmap = (thing->renderflags2 & RF2_NOMIPMAP);
 
 	// check renderrequired vs ~r_rendercaps, if anything matches we don't support that feature,
 	// check renderhidden vs r_rendercaps, if anything matches we do support that feature and should hide it.
@@ -1241,12 +1245,27 @@ void HWSprite::Process(HWDrawInfo *di, AActor* thing, sector_t * sector, area_t 
 //
 //==========================================================================
 
+enum SPFflag
+{
+	SPF_FULLBRIGHT = 1,
+	SPF_RELPOS = 1 << 1,
+	SPF_RELVEL = 1 << 2,
+	SPF_RELACCEL = 1 << 3,
+	SPF_RELANG = 1 << 4,
+	SPF_NOTIMEFREEZE = 1 << 5,
+	SPF_ROLL = 1 << 6,
+	SPF_REPLACE = 1 << 7,
+	SPF_NO_XY_BILLBOARD = 1 << 8,
+	SPF_NOMIPMAP = 1 << 14,
+};
+
 void HWSprite::ProcessParticle (HWDrawInfo *di, particle_t *particle, sector_t *sector)//, int shade, int fakeside)
 {
 	if (particle->alpha==0) return;
 
 	lightlevel = hw_ClampLight(sector->GetSpriteLight());
 	foglevel = (uint8_t)clamp<short>(sector->lightlevel, 0, 255);
+	nomipmap = particle->flags & SPF_NOMIPMAP;
 
 	if (di->isFullbrightScene()) 
 	{
