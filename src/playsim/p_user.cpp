@@ -1470,7 +1470,7 @@ void P_PredictPlayer (player_t *player)
 
 		player->cmd = localcmds[i % LOCALCMDTICS];
 		P_PlayerThink (player);
-		player->mo->Tick ();
+		player->mo->CallTick ();
 
 		if (CanLerp && PredictionLast.gametic > 0 && i == PredictionLast.gametic && !NoInterpolateOld)
 		{
