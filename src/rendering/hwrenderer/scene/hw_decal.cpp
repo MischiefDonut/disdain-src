@@ -63,7 +63,7 @@ void HWDecal::DrawDecal(HWDrawInfo *di, FRenderState &state)
 	state.SetLightIndex(dynlightindex);
 
 	// add light probe contribution
-	if (di->Level->LightProbes.Size() > 0)
+	if (!(decal->RenderFlags & RF_FULLBRIGHT) && di->Level->LightProbes.Size() > 0)
 	{
 		double x, y;
 		decal->GetXY(decal->Side, x, y);
