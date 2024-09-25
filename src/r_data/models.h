@@ -59,6 +59,7 @@ enum
 	MDL_SCALEWEAPONFOV				= 2048,	// scale weapon view model with higher user FOVs
 	MDL_MODELSAREATTACHMENTS		= 4096,	// any model index after 0 is treated as an attachment, and therefore will use the bone results of index 0
 	MDL_CORRECTPIXELSTRETCH			= 8192,	// ensure model does not distort with pixel stretch when pitch/roll is applied
+	MDL_FORCECULLBACKFACES			= 16384,//
 };
 
 FSpriteModelFrame * FindModelFrame(const PClass * ti, int sprite, int frame, bool dropped);
